@@ -21,6 +21,7 @@ PACKAGES=(
   fd-find          # telescope find-files
   nodejs           # treesitter CLI, LSPs
   npm
+  zsh
 )
 
 MISSING=()
@@ -97,6 +98,54 @@ log "Syncing LazyVim plugins (headless)..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 ok "LazyVim plugins synced"
 
-# ── 5. Summary ───────────────────────────────────────────────────────────
+# ── 5. Zsh + Oh My Zsh ───────────────────────────────────────────────────
+if [ -d "${HOME}/.oh-my-zsh" ]; then
+  ok "Oh My Zsh already installed"
+else
+  log "Installing Oh My Zsh..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  ok "Oh My Zsh installed"
+fi
+
+# Install zsh-autosuggestions plugin
+ZSH_CUSTOM="${ZSH_CUSTOM:-${HOME}/.oh-my-zsh/custom}"
+if [ -d "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" ]; then
+  ok "zsh-autosuggestions already installed"
+else
+  log "Installing zsh-autosuggestions..."
+  git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM}/plugins/zsh-autosuggestions"
+  ok "zsh-autosuggestions installed"
+fi
+
+# Install zsh-syntax-highlighting plugin
+if [ -d "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting" ]; then
+  ok "zsh-syntax-highlighting already installed"
+else
+  log "Installing zsh-syntax-highlighting..."
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting"
+  ok "zsh-syntax-highlighting installed"
+fi
+
+# Symlink .zshrc from this repo
+ZSHRC_SRC="${HOME}/.config/zsh/.zshrc"
+ZSHRC_DST="${HOME}/.zshrc"
+if [ -L "$ZSHRC_DST" ] && [ "$(readlink -f "$ZSHRC_DST")" = "$ZSHRC_SRC" ]; then
+  ok ".zshrc symlink already correct"
+else
+  [ -f "$ZSHRC_DST" ] && mv "$ZSHRC_DST" "${ZSHRC_DST}.bak.$(date +%s)"
+  ln -sf "$ZSHRC_SRC" "$ZSHRC_DST"
+  ok "Symlinked .zshrc → ${ZSHRC_SRC}"
+fi
+
+# Set zsh as default shell
+if [ "$(basename "$SHELL")" != "zsh" ]; then
+  log "Setting zsh as default shell..."
+  sudo chsh -s "$(which zsh)" "$(whoami)"
+  ok "Default shell set to zsh (takes effect on next login)"
+else
+  ok "zsh is already the default shell"
+fi
+
+# ── 6. Summary ───────────────────────────────────────────────────────────
 echo ""
 ok "All done! Run 'nvim' to get started."
