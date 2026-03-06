@@ -1,0 +1,6 @@
+# Ignore everything by default — only track what we explicitly add
+*
+!.gitignore
+!setup.sh
+!nvim/
+!nvim/**
