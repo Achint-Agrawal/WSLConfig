@@ -6,3 +6,5 @@
 !nvim/**
 !zsh/
 !zsh/**
+!.github/
+!.github/**
