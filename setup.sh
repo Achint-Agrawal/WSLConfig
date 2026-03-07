@@ -19,8 +19,7 @@ PACKAGES=(
   unzip
   ripgrep          # telescope live-grep
   fd-find          # telescope find-files
-  nodejs           # treesitter CLI, LSPs
-  npm
+  nodejs           # treesitter CLI, LSPs (NodeSource pkg bundles npm)
   zsh
 )
 
