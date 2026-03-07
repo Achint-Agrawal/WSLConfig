@@ -81,7 +81,26 @@ else
   ok "tree-sitter CLI installed"
 fi
 
-# ── 4. LazyVim ───────────────────────────────────────────────────────────
+# ── 4. lazygit (LazyVim <space>gg) ────────────────────────────────────────
+install_lazygit() {
+  log "Installing lazygit..."
+  local tmp version
+  tmp="$(mktemp -d)"
+  version="$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -Po '"tag_name": "v\K[^"]*')"
+  curl -fsSL "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${version}_Linux_x86_64.tar.gz" -o "$tmp/lazygit.tar.gz"
+  tar xf "$tmp/lazygit.tar.gz" -C "$tmp" lazygit
+  sudo install "$tmp/lazygit" /usr/local/bin
+  rm -rf "$tmp"
+  ok "lazygit ${version} installed"
+}
+
+if command -v lazygit &>/dev/null; then
+  ok "lazygit already installed"
+else
+  install_lazygit
+fi
+
+# ── 5. LazyVim ───────────────────────────────────────────────────────────
 # The nvim/ config in this repo IS the LazyVim starter.
 # lazy.nvim + plugins bootstrap themselves on first launch.
 # We just need to make sure ~/.config/nvim exists (it's part of this repo).
@@ -97,7 +116,7 @@ log "Syncing LazyVim plugins (headless)..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 ok "LazyVim plugins synced"
 
-# ── 5. Zsh + Oh My Zsh ───────────────────────────────────────────────────
+# ── 6. Zsh + Oh My Zsh ───────────────────────────────────────────────────
 if [ -d "${HOME}/.oh-my-zsh" ]; then
   ok "Oh My Zsh already installed"
 else
@@ -145,6 +164,6 @@ else
   ok "zsh is already the default shell"
 fi
 
-# ── 6. Summary ───────────────────────────────────────────────────────────
+# ── 7. Summary ───────────────────────────────────────────────────────────
 echo ""
 ok "All done! Run 'nvim' to get started."
