@@ -27,6 +27,13 @@ export NVM_DIR="$HOME/.nvm"
 # Local binaries
 export PATH="$HOME/.local/bin:$PATH"
 
+# ── Windows interop (appendWindowsPath=false in /etc/wsl.conf) ───────────
+WIN_HOME="$(wslpath "$(/mnt/c/Windows/System32/cmd.exe /C 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')")"
+alias code="'${WIN_HOME}/AppData/Local/Programs/Microsoft VS Code/bin/code'"
+alias explorer="/mnt/c/Windows/explorer.exe"
+alias clip="/mnt/c/Windows/System32/clip.exe"
+alias powershell="/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+
 # ── Aliases ──────────────────────────────────────────────────────────────
 alias v="nvim"
 alias ll="ls -alFh"
