@@ -4,6 +4,8 @@
 !setup.sh
 !nvim/
 !nvim/**
+!tmux/
+!tmux/**
 !zsh/
 !zsh/**
 !.github/

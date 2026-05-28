@@ -40,3 +40,12 @@ alias ll="ls -alFh"
 alias gs="git status"
 alias gd="git diff"
 alias gl="git log --oneline -20"
+export RBENV_ROOT="$HOME/.rbenv"
+export PATH="$RBENV_ROOT/bin:$PATH"
+eval "$(rbenv init - zsh)"
+
+# BEGIN Agency MANAGED BLOCK
+if [[ ":${PATH}:" != *":/home/acagrawal/.config/agency/CurrentVersion:"* ]]; then
+    export PATH="/home/acagrawal/.config/agency/CurrentVersion:${PATH}"
+fi
+# END Agency MANAGED BLOCK

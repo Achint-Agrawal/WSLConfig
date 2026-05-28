@@ -3,6 +3,12 @@
 # Usage: bash ~/.config/setup.sh
 set -euo pipefail
 
+# Strip Windows paths from PATH so we only find Linux-native binaries.
+# This prevents WSL from picking up Windows executables (e.g. tree-sitter)
+# when appendWindowsPath hasn't been disabled yet.
+PATH="$(echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/[a-zA-Z]/' | paste -sd:)"
+export PATH
+
 NVIM_VERSION="v0.11.6"
 NVIM_INSTALL_DIR="/opt/nvim-linux-x86_64"
 NVIM_TARBALL_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
@@ -19,7 +25,9 @@ PACKAGES=(
   unzip
   ripgrep          # telescope live-grep
   fd-find          # telescope find-files
-  nodejs           # treesitter CLI, LSPs (NodeSource pkg bundles npm)
+  nodejs           # treesitter CLI, LSPs
+  npm              # Node package manager (separate package on Ubuntu)
+  tmux
   zsh
 )
 
@@ -36,6 +44,15 @@ if [ ${#MISSING[@]} -gt 0 ]; then
   sudo apt-get install -y -qq "${MISSING[@]}"
 else
   ok "System packages already installed"
+fi
+
+# ── 1b. WSL interop — disable Windows PATH pollution ─────────────────────
+if grep -q 'appendWindowsPath' /etc/wsl.conf 2>/dev/null; then
+  ok "appendWindowsPath already configured in /etc/wsl.conf"
+else
+  log "Setting appendWindowsPath=false in /etc/wsl.conf..."
+  printf '\n[interop]\nappendWindowsPath=false\n' | sudo tee -a /etc/wsl.conf >/dev/null
+  ok "appendWindowsPath=false added to /etc/wsl.conf (restart WSL to take effect)"
 fi
 
 # ── 2. Neovim ────────────────────────────────────────────────────────────
@@ -116,7 +133,15 @@ log "Syncing LazyVim plugins (headless)..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 ok "LazyVim plugins synced"
 
-# ── 6. Zsh + Oh My Zsh ───────────────────────────────────────────────────
+# ── 6. tmux ───────────────────────────────────────────────────────────────
+if [ -f "${HOME}/.config/tmux/tmux.conf" ]; then
+  ok "tmux config present (~/.config/tmux/tmux.conf — XDG native path)"
+else
+  log "ERROR: ~/.config/tmux/tmux.conf not found — clone this repo into ~/.config first"
+  exit 1
+fi
+
+# ── 7. Zsh + Oh My Zsh ───────────────────────────────────────────────────
 if [ -d "${HOME}/.oh-my-zsh" ]; then
   ok "Oh My Zsh already installed"
 else
@@ -164,6 +189,6 @@ else
   ok "zsh is already the default shell"
 fi
 
-# ── 7. Summary ───────────────────────────────────────────────────────────
+# ── 8. Summary ───────────────────────────────────────────────────────────
 echo ""
 ok "All done! Run 'nvim' to get started."
