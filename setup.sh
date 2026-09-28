@@ -117,6 +117,39 @@ else
   install_lazygit
 fi
 
+# ── 4b. Language toolchains (user-level; needed by Rust and C#/Bicep LSPs) ──
+RUST_TOOLCHAIN="1.95"
+if [ -x "${HOME}/.cargo/bin/rustup" ]; then
+  ok "rustup already installed"
+else
+  log "Installing rustup..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain none
+  ok "rustup installed"
+fi
+RUSTUP="${HOME}/.cargo/bin/rustup"
+if "$RUSTUP" toolchain list | grep -q "^${RUST_TOOLCHAIN}-"; then
+  ok "Rust ${RUST_TOOLCHAIN} toolchain already installed"
+else
+  "$RUSTUP" toolchain install "$RUST_TOOLCHAIN" --profile minimal -c rust-analyzer -c rust-src -c clippy -c rustfmt
+  "$RUSTUP" default "$RUST_TOOLCHAIN"
+  ok "Rust ${RUST_TOOLCHAIN} toolchain installed"
+fi
+# Some repos pin Microsoft's internal "ms-prod-*" channel; alias it to the public toolchain.
+if ! "$RUSTUP" toolchain list | grep -q "^ms-prod-${RUST_TOOLCHAIN}"; then
+  "$RUSTUP" toolchain link "ms-prod-${RUST_TOOLCHAIN}" "$("$RUSTUP" run "$RUST_TOOLCHAIN" rustc --print sysroot)"
+  ok "Linked ms-prod-${RUST_TOOLCHAIN} → ${RUST_TOOLCHAIN}"
+fi
+
+DOTNET_CHANNEL="10.0"
+if "${HOME}/.dotnet/dotnet" --list-sdks 2>/dev/null | grep -q "^${DOTNET_CHANNEL}\."; then
+  ok ".NET ${DOTNET_CHANNEL} SDK already installed"
+else
+  log "Installing .NET ${DOTNET_CHANNEL} SDK to ~/.dotnet..."
+  curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel "$DOTNET_CHANNEL" --install-dir "${HOME}/.dotnet" --no-path
+  ok ".NET ${DOTNET_CHANNEL} SDK installed"
+fi
+export PATH="${HOME}/.cargo/bin:${HOME}/.dotnet:${PATH}" DOTNET_ROOT="${HOME}/.dotnet"
+
 # ── 5. LazyVim ───────────────────────────────────────────────────────────
 # The nvim/ config in this repo IS the LazyVim starter.
 # lazy.nvim + plugins bootstrap themselves on first launch.

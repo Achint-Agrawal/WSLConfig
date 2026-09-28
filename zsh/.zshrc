@@ -27,6 +27,16 @@ export NVM_DIR="$HOME/.nvm"
 # Local binaries
 export PATH="$HOME/.local/bin:$PATH"
 
+# Rust (rustup, installed with --no-modify-path)
+[ -d "$HOME/.cargo/bin" ] && export PATH="$HOME/.cargo/bin:$PATH"
+
+# .NET SDK (user-level dotnet-install.sh; also used by the C# and Bicep language servers)
+if [ -x "$HOME/.dotnet/dotnet" ]; then
+  export DOTNET_ROOT="$HOME/.dotnet"
+  export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1
+fi
+
 # ── Windows interop (appendWindowsPath=false in /etc/wsl.conf) ───────────
 WIN_HOME="$(wslpath "$(/mnt/c/Windows/System32/cmd.exe /C 'echo %USERPROFILE%' 2>/dev/null | tr -d '\r')")"
 alias code="'${WIN_HOME}/AppData/Local/Programs/Microsoft VS Code/bin/code'"

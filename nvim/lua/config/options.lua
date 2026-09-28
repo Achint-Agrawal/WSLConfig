@@ -2,6 +2,9 @@
 -- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
 -- Add any additional options here
 
+-- Don't reformat on save; work repos have their own style. Format manually with <leader>cf.
+vim.g.autoformat = false
+
 -- WSL clipboard integration (LazyVim already sets clipboard=unnamedplus)
 vim.g.clipboard = {
   name = "WslClipboard",
